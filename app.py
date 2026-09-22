@@ -1,551 +1,130 @@
 
 import streamlit as st
 import pandas as pd
-import joblib
+import pickle
 
-# ============================================================
-# EDUGUARD AI
-# Mobile-Friendly Academic Risk Early Warning System
-# ============================================================
+with open("/content/eduguard_model.pkl", "rb") as f:
+    model = pickle.load(f)
+
+with open("/content/eduguard_data.pkl", "rb") as f:
+    data = pickle.load(f)
 
 st.set_page_config(
     page_title="EduGuard AI",
     page_icon="🎓",
-    layout="centered",
-    initial_sidebar_state="collapsed"
+    layout="centered"
 )
 
-# Load model
-model = joblib.load("/content/eduguard_ai_model.pkl")
-
-# ============================================================
-# CUSTOM CSS - MOBILE FRIENDLY
-# ============================================================
-
-st.markdown("""
-<style>
-
-.main-title {
-    text-align: center;
-    font-size: 42px;
-    font-weight: 800;
-    margin-bottom: 5px;
-}
-
-.subtitle {
-    text-align: center;
-    font-size: 18px;
-    margin-bottom: 25px;
-}
-
-.section-title {
-    font-size: 24px;
-    font-weight: 700;
-    margin-top: 20px;
-    margin-bottom: 10px;
-}
-
-div.stButton > button {
-    width: 100%;
-    min-height: 55px;
-    font-size: 18px;
-    font-weight: 700;
-    border-radius: 12px;
-}
-
-@media (max-width: 600px) {
-
-    .main-title {
-        font-size: 32px;
-    }
-
-    .subtitle {
-        font-size: 16px;
-    }
-
-    .section-title {
-        font-size: 21px;
-    }
-
-    .block-container {
-        padding-top: 1rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-# ============================================================
-# HEADER
-# ============================================================
-
-st.markdown(
-    '<div class="main-title">🎓 EduGuard AI</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    '<div class="subtitle">AI-Powered Academic Risk Early-Warning System</div>',
-    unsafe_allow_html=True
-)
+st.title("🎓 EduGuard AI")
+st.subheader("Student Academic Risk Prediction System")
 
 st.write(
-    "EduGuard AI analyzes academic, behavioral, and student-support "
-    "information to estimate academic risk and provide a personalized "
-    "support plan."
+    "EduGuard AI uses academic, attendance, study, sleep, and "
+    "student-background information to estimate academic risk "
+    "before the final examination."
 )
 
 st.divider()
 
-# ============================================================
-# STUDENT PROFILE
-# ============================================================
+st.header("📝 Student Information")
 
-st.markdown(
-    '<div class="section-title">👤 Student Profile</div>',
-    unsafe_allow_html=True
+gender = st.selectbox("Gender", ["Male", "Female"])
+
+study_time_hours = st.number_input(
+    "Study Time (hours per day)",
+    min_value=0.0,
+    max_value=12.0,
+    value=3.0,
+    step=0.5
 )
 
-school = st.selectbox("School", ["GP", "MS"])
-sex = st.selectbox("Sex", ["F", "M"])
-age = st.number_input("Age", 15, 22, 17)
-address = st.selectbox("Address", ["U", "R"])
-famsize = st.selectbox("Family Size", ["GT3", "LE3"])
-Pstatus = st.selectbox("Parent Status", ["A", "T"])
-
-Medu = st.selectbox("Mother's Education", [0, 1, 2, 3, 4])
-Fedu = st.selectbox("Father's Education", [0, 1, 2, 3, 4])
-
-Mjob = st.selectbox(
-    "Mother's Job",
-    ["teacher", "health", "services", "at_home", "other"]
+attendance_percent = st.number_input(
+    "Attendance (%)",
+    min_value=0.0,
+    max_value=100.0,
+    value=80.0,
+    step=1.0
 )
 
-Fjob = st.selectbox(
-    "Father's Job",
-    ["teacher", "health", "services", "at_home", "other"]
+sleep_hours = st.number_input(
+    "Sleep Hours per Day",
+    min_value=0.0,
+    max_value=12.0,
+    value=7.0,
+    step=0.5
 )
 
-reason = st.selectbox(
-    "School Choice Reason",
-    ["home", "reputation", "course", "other"]
+parental_education = st.selectbox(
+    "Parental Education",
+    ["High School", "Bachelor's", "Master's", "PhD"]
 )
 
-guardian = st.selectbox(
-    "Guardian",
-    ["mother", "father", "other"]
-)
-
-# ============================================================
-# ACADEMIC INFORMATION
-# ============================================================
-
-st.markdown(
-    '<div class="section-title">📚 Academic Information</div>',
-    unsafe_allow_html=True
-)
-
-traveltime = st.selectbox("Travel Time", [1, 2, 3, 4])
-
-studytime = st.selectbox(
-    "Weekly Study Time",
-    [1, 2, 3, 4]
-)
-
-failures = st.selectbox(
-    "Previous Failures",
-    [0, 1, 2, 3]
-)
-
-absences = st.number_input(
-    "School Absences",
-    min_value=0,
-    max_value=100,
-    value=2
-)
-
-G1 = st.number_input(
-    "First Period Grade (G1)",
-    min_value=0,
-    max_value=20,
-    value=10
-)
-
-G2 = st.number_input(
-    "Second Period Grade (G2)",
-    min_value=0,
-    max_value=20,
-    value=10
-)
-
-famrel = st.slider(
-    "Family Relationship",
-    1, 5, 4
-)
-
-freetime = st.slider(
-    "Free Time",
-    1, 5, 3
-)
-
-goout = st.slider(
-    "Social Activity",
-    1, 5, 3
-)
-
-health = st.slider(
-    "Current Health",
-    1, 5, 3
-)
-
-# ============================================================
-# SUPPORT INFORMATION
-# ============================================================
-
-st.markdown(
-    '<div class="section-title">🏠 Support & Lifestyle</div>',
-    unsafe_allow_html=True
-)
-
-schoolsup = st.selectbox(
-    "School Support",
-    ["yes", "no"]
-)
-
-famsup = st.selectbox(
-    "Family Support",
-    ["yes", "no"]
-)
-
-paid = st.selectbox(
-    "Extra Paid Classes",
-    ["yes", "no"]
-)
-
-activities = st.selectbox(
-    "Extra Activities",
-    ["yes", "no"]
-)
-
-nursery = st.selectbox(
-    "Attended Nursery",
-    ["yes", "no"]
-)
-
-higher = st.selectbox(
-    "Plans Higher Education",
-    ["yes", "no"]
-)
-
-internet = st.selectbox(
+internet_access = st.selectbox(
     "Internet Access",
-    ["yes", "no"]
+    ["Yes", "No"]
 )
 
-romantic = st.selectbox(
-    "Romantic Relationship",
-    ["yes", "no"]
+extracurricular_activities = st.selectbox(
+    "Extracurricular Activities",
+    ["Yes", "No"]
 )
 
-# ============================================================
-# PREDICTION
-# ============================================================
-
-st.divider()
-
-st.markdown(
-    '<div class="section-title">🔮 Academic Risk Prediction</div>',
-    unsafe_allow_html=True
+part_time_job = st.selectbox(
+    "Part-Time Job",
+    ["Yes", "No"]
 )
 
-st.write(
-    "Enter the information above and generate an academic risk assessment."
+previous_grade = st.number_input(
+    "Previous Grade",
+    min_value=0.0,
+    max_value=100.0,
+    value=70.0,
+    step=0.1
 )
 
-predict_button = st.button(
-    "🔮 Predict Academic Risk"
-)
+if st.button("🔍 Predict Risk", use_container_width=True):
 
-# ============================================================
-# PREDICTION LOGIC
-# ============================================================
-
-if predict_button:
-
-    student = pd.DataFrame([{
-        "school": school,
-        "sex": sex,
-        "age": age,
-        "address": address,
-        "famsize": famsize,
-        "Pstatus": Pstatus,
-        "Medu": Medu,
-        "Fedu": Fedu,
-        "Mjob": Mjob,
-        "Fjob": Fjob,
-        "reason": reason,
-        "guardian": guardian,
-        "traveltime": traveltime,
-        "studytime": studytime,
-        "failures": failures,
-        "schoolsup": schoolsup,
-        "famsup": famsup,
-        "paid": paid,
-        "activities": activities,
-        "nursery": nursery,
-        "higher": higher,
-        "internet": internet,
-        "romantic": romantic,
-        "famrel": famrel,
-        "freetime": freetime,
-        "goout": goout,
-        "health": health,
-        "absences": absences,
-        "G1": G1,
-        "G2": G2
+    student_data = pd.DataFrame([{
+        "gender": gender,
+        "study_time_hours": study_time_hours,
+        "attendance_percent": attendance_percent,
+        "sleep_hours": sleep_hours,
+        "parental_education": parental_education,
+        "internet_access": internet_access,
+        "extracurricular_activities": extracurricular_activities,
+        "part_time_job": part_time_job,
+        "previous_grade": previous_grade
     }])
 
-    prediction = model.predict(student)[0]
+    prediction = model.predict(student_data)[0]
 
-    # ========================================================
-    # RESULT
-    # ========================================================
+    probabilities = model.predict_proba(student_data)[0]
+    classes = model.classes_
+
+    probability_dict = dict(zip(classes, probabilities))
 
     st.divider()
-
-    st.subheader("📊 Prediction Result")
+    st.header("📊 Prediction Result")
 
     if prediction == "High Risk":
-
-        st.error("🔴 HIGH ACADEMIC RISK")
-
-        st.write(
-            "The model identifies this student as having a higher "
-            "academic risk based on the information provided."
-        )
-
-        support_level = "High Priority Support"
-
+        st.error("🔴 High Risk")
     elif prediction == "Medium Risk":
-
-        st.warning("🟡 MEDIUM ACADEMIC RISK")
-
-        st.write(
-            "The model identifies this student as having a moderate "
-            "academic risk."
-        )
-
-        support_level = "Regular Monitoring"
-
+        st.warning("🟡 Medium Risk")
     else:
+        st.success("🟢 Low Risk")
 
-        st.success("🟢 LOW ACADEMIC RISK")
+    st.write("### Risk Probabilities")
 
-        st.write(
-            "The model identifies this student as currently having "
-            "a lower academic risk."
-        )
+    for risk in ["High Risk", "Medium Risk", "Low Risk"]:
+        probability = probability_dict.get(risk, 0)
+        st.write(f"**{risk}: {probability:.1%}**")
+        st.progress(float(probability))
 
-        support_level = "Maintain Current Progress"
-
-    # ========================================================
-    # UNIQUE FEATURE
-    # SMART SUPPORT PLAN
-    # ========================================================
-
-    st.divider()
-
-    st.subheader("💡 EduGuard Smart Support Plan")
-
-    st.write(
-        "Instead of only showing a risk level, EduGuard AI creates "
-        "simple actions that can help support the student's progress."
+    st.info(
+        "This is an AI-assisted risk estimate intended to help identify "
+        "students who may benefit from additional academic support."
     )
-
-    # --------------------------------------------------------
-    # HIGH RISK PLAN
-    # --------------------------------------------------------
-
-    if prediction == "High Risk":
-
-        st.error("🚨 Priority: Immediate Academic Support")
-
-        st.markdown("""
-        **📅 7-Day Support Plan**
-
-        **Day 1:** Review recent grades and identify difficult subjects.
-
-        **Day 2:** Create a simple daily study schedule.
-
-        **Day 3:** Review missed topics with a teacher or mentor.
-
-        **Day 4:** Complete focused practice for weak subjects.
-
-        **Day 5:** Review attendance and missed classroom work.
-
-        **Day 6:** Take a short practice test or revision session.
-
-        **Day 7:** Review progress and adjust the study plan.
-        """)
-
-        st.info(
-            "👨‍🏫 Suggested action: Teacher/counselor follow-up "
-            "and additional academic support."
-        )
-
-    # --------------------------------------------------------
-    # MEDIUM RISK PLAN
-    # --------------------------------------------------------
-
-    elif prediction == "Medium Risk":
-
-        st.warning("📌 Priority: Regular Monitoring")
-
-        st.markdown("""
-        **📅 7-Day Improvement Plan**
-
-        **Day 1:** Set two academic goals for the week.
-
-        **Day 2:** Spend focused time reviewing difficult topics.
-
-        **Day 3:** Complete pending assignments.
-
-        **Day 4:** Practice questions from weaker subjects.
-
-        **Day 5:** Review previous mistakes.
-
-        **Day 6:** Complete a short revision session.
-
-        **Day 7:** Check progress against the weekly goals.
-        """)
-
-        st.info(
-            "👨‍🏫 Suggested action: Monitor progress and provide "
-            "support when needed."
-        )
-
-    # --------------------------------------------------------
-    # LOW RISK PLAN
-    # --------------------------------------------------------
-
-    else:
-
-        st.success("🌟 Priority: Maintain Progress")
-
-        st.markdown("""
-        **📅 7-Day Growth Plan**
-
-        **Day 1:** Set a learning goal.
-
-        **Day 2:** Review current subjects.
-
-        **Day 3:** Practice one challenging topic.
-
-        **Day 4:** Complete revision.
-
-        **Day 5:** Explore an additional learning resource.
-
-        **Day 6:** Test your understanding.
-
-        **Day 7:** Review achievements and set the next goal.
-        """)
-
-        st.info(
-            "👨‍🏫 Suggested action: Continue positive study habits "
-            "and monitor academic progress."
-        )
-
-    # ========================================================
-    # QUICK INSIGHTS
-    # ========================================================
-
-    st.divider()
-
-    st.subheader("📈 Quick Student Insights")
-
-    if studytime <= 1:
-        st.warning(
-            "📚 Study time is relatively low. Increasing consistent "
-            "study time may be beneficial."
-        )
-    else:
-        st.success(
-            "📚 Study time appears reasonably consistent."
-        )
-
-    if absences > 15:
-        st.warning(
-            "🏫 Attendance may require attention because absences are high."
-        )
-    else:
-        st.success(
-            "🏫 Attendance is within a relatively manageable range."
-        )
-
-    if failures > 0:
-        st.warning(
-            "🎯 Previous academic failures indicate that additional "
-            "monitoring may be useful."
-        )
-    else:
-        st.success(
-            "🎯 No previous failures were reported."
-        )
-
-    if G2 < G1:
-        st.warning(
-            "📉 The second-period grade is lower than the first-period grade."
-        )
-    elif G2 > G1:
-        st.success(
-            "📈 The second-period grade is higher than the first-period grade."
-        )
-    else:
-        st.info(
-            "📊 The first and second period grades are currently the same."
-        )
-
-# ============================================================
-# ABOUT
-# ============================================================
 
 st.divider()
 
-with st.expander("🤖 About EduGuard AI"):
-
-    st.write(
-        "**Machine Learning Model:** Gradient Boosting"
-    )
-
-    st.write(
-        "**Test Accuracy:** 84.62%"
-    )
-
-    st.write(
-        "**Training Dataset:** 649 student records"
-    )
-
-    st.write(
-        "**Alcohol-related features:** Removed"
-    )
-
-with st.expander("⚠️ Responsible Use"):
-
-    st.write(
-        "EduGuard AI is an educational early-warning tool. "
-        "Predictions should support—not replace—teachers, counselors, "
-        "parents, and other qualified decision-makers."
-    )
-
-# ============================================================
-# FOOTER
-# ============================================================
-
-st.divider()
-
-st.caption(
-    "🎓 EduGuard AI • Academic Risk Awareness & Smart Student Support"
-)
+st.caption("EduGuard AI • Student Support System")

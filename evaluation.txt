@@ -1,0 +1,11 @@
+EduGuard AI Evaluation Summary
+
+Test Accuracy: 69.5%
+High Risk Recall: 55%
+Medium Risk Recall: 44%
+Low Risk Recall: 82%
+Weighted F1: 0.70
+
+5-Fold CV Accuracy: 72.5% ± 2.3%
+5-Fold CV Macro F1: 60.4% ± 4.2%
+5-Fold CV Weighted F1: 71.7% ± 2.1%
