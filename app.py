@@ -3,10 +3,10 @@ import streamlit as st
 import pandas as pd
 import pickle
 
-with open("/content/eduguard_model.pkl", "rb") as f:
+with open("eduguard_model.pkl", "rb") as f:
     model = pickle.load(f)
 
-with open("/content/eduguard_data.pkl", "rb") as f:
+with open("eduguard_data.pkl", "rb") as f:
     data = pickle.load(f)
 
 st.set_page_config(
